@@ -1,0 +1,9 @@
+main.c:60:6:Servo1_Angle	3
+main.c:72:6:Servo2_Angle	3
+main.c:84:6:Servo3_Angle	3
+main.c:96:6:Servo4_Angle	3
+main.c:118:5:main	4
+main.c:215:6:SystemClock_Config	3
+main.c:262:13:MX_TIM1_Init	8
+main.c:339:13:MX_GPIO_Init	1
+main.c:360:6:Error_Handler	1
