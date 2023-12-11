@@ -3,11 +3,13 @@
 Servo sg90;
 int pos = 0;
 
-void setup() {
+void setup() 
+{
   sg90.attach(13);
 }
 
-void loop() {
+void loop() 
+{
   
   for (pos = 0; pos <= 180; pos += 1) {
     sg90.write(pos);
@@ -18,7 +20,6 @@ void loop() {
     sg90.write(pos);
     delay(15);
   }
-
 
 
 //sg90.write(90);
