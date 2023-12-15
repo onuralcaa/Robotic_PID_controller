@@ -21,6 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "dwt_stm32_delay.h";
 
 /* USER CODE END Includes */
 
@@ -44,6 +45,9 @@ TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN PV */
 
+uint32_t time;
+uint8_t distance; //0-255 olcum araligi
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -56,6 +60,28 @@ static void MX_TIM1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+
+uint32_t Read_HCSR04()
+{
+	uint32_t local_time = 0;
+
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
+	DWT_Delay_us(10);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
+
+	while(!HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0));
+
+	while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0))
+	{
+		local_time++;
+		DWT_Delay_us(1);
+	}
+
+	return local_time;
+}
+
+
 
 void Servo1_Angle(int angle1)
 {
@@ -127,6 +153,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+  DWT_Delay_Init();
 
   /* USER CODE END Init */
 
@@ -148,10 +175,6 @@ int main(void)
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
 
 
-
-
-
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -162,42 +185,49 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
+	  	  time = Read_HCSR04();
+	  	  distance = time * 0.034 / 2; //cm cinsinden mesafe
 
 
-	  for(int i=0 ; i <= 90; i++ )
+//-----------SERVO AYARLARI-------------------------------------------
+	  Servo1_Angle(90);
+	  Servo2_Angle(45);
+	  Servo3_Angle(45);
+	  Servo4_Angle(45);
+
+
+/*
+	  for(int i=0 ; i <= 180; i++ )
 	  {
-		  //Servo1_Angle(i);
-		  Servo2_Angle(i);
-		  Servo3_Angle(i);
+		  Servo1_Angle(i);
+		  //Servo2_Angle(i);
+		  //Servo3_Angle(i);
 		  //Servo4_Angle(i);
 
 
-		  HAL_Delay(55);
+		  HAL_Delay(25);
 
-		  if(i==90)
+		  if(i==180)
 		  {
 			  while(i>0)
 			  {
-				  //Servo1_Angle(i);
-				  Servo2_Angle(i);
-				  Servo3_Angle(i);
+				  Servo1_Angle(i);
+				  //Servo2_Angle(i);
+				  //Servo3_Angle(i);
 				  //Servo4_Angle(i);
 
 
 				  i--;
 
-				  HAL_Delay(55);
+				  HAL_Delay(25);
 			  }
 		  }
 	  }
 
 
+*/
 
 
-	  //Servo1_Angle(180);
-	  //Servo2_Angle(45);
-	  //Servo3_Angle(45);
-	  //Servo4_Angle(45);
 
 
 
@@ -338,12 +368,29 @@ static void MX_TIM1_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PA0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA1 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
