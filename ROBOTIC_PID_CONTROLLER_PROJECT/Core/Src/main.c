@@ -77,9 +77,9 @@ void delay_uS(uint16_t us)
 //************************PID KONTROL****************************
 
 // PID kontrol değişkenleri
-double Kp = 0.75; // P (Proportional) katsayısı
+double Kp = 1.55; // P (Proportional) katsayısı
 double Ki = 0; // I (Integral) katsayısı
-double Kd = 0.05; // D (Derivative) katsayısı
+double Kd = 0.025; // D (Derivative) katsayısı
 
 // Hesaplanan PID kontrol çıkışı
 double pidOutput = 0.0;
@@ -194,10 +194,6 @@ void Servo3_Angle(int angle3)
 
 void Servo4_Angle(float angle4)
 {
-	if(angle4 < 0)
-		angle4 = 0;
-	if(angle4 > 90)
-		angle4 = 90;
 
 	angle4 += 45.0; //offset değeri
 
@@ -222,7 +218,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+   HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -268,16 +264,17 @@ int main(void)
       calculatePID();
 
 	  // Servo açısını güncelle
-	      servoAngle += pidOutput;
+	      servoAngle = servoAngle + pidOutput * (-1);
 
 	      // Servo açısını sınırla (0 ile 90 arasında)
-	      if (servoAngle < 0) {
-	          servoAngle = 0;
-	      } else if (servoAngle > 90) {
-	          servoAngle = 90;
+	      if (servoAngle < 25.0) {
+	          servoAngle = 25.0;
+	      } else if (servoAngle > 60.0) {
+	          servoAngle = 60.0;
 	      }
 
-	  Servo4_Angle(servoAngle);
+	  //Servo4_Angle(servoAngle);
+	  Servo4_Angle(45);
 
 	  //Read_ADC();
 
