@@ -77,9 +77,9 @@ void delay_uS(uint16_t us)
 //************************PID KONTROL****************************
 
 // PID kontrol değişkenleri
-double Kp = 1.55; // P (Proportional) katsayısı
+double Kp = 0.25; // P (Proportional) katsayısı
 double Ki = 0; // I (Integral) katsayısı
-double Kd = 0.025; // D (Derivative) katsayısı
+double Kd = 0.0015; // D (Derivative) katsayısı
 
 // Hesaplanan PID kontrol çıkışı
 double pidOutput = 0.0;
@@ -152,7 +152,6 @@ uint32_t Read_HCSR04()
 	}
 
 	distance_temp = (float)local_time/15.1;
-	HAL_Delay(50);
 	return distance_temp;
 }
 
@@ -182,24 +181,11 @@ void Servo2_Angle(int angle2)
 
 void Servo3_Angle(int angle3)
 {
-	if(angle3 < 0)
-		angle3 = 0;
-	if(angle3 > 90)
-		angle3 = 90;
 
 	angle3 += 45; //offset değeri
 
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, angle3);
 }
-
-void Servo4_Angle(float angle4)
-{
-
-	angle4 += 45.0; //offset değeri
-
-	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, angle4);
-}
-
 
 
 
@@ -218,7 +204,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-   HAL_Init();
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -245,7 +231,6 @@ int main(void)
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
-  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
 
 
   /* USER CODE END 2 */
@@ -267,14 +252,14 @@ int main(void)
 	      servoAngle = servoAngle + pidOutput * (-1);
 
 	      // Servo açısını sınırla (0 ile 90 arasında)
-	      if (servoAngle < 25.0) {
-	          servoAngle = 25.0;
-	      } else if (servoAngle > 60.0) {
-	          servoAngle = 60.0;
+	      if (servoAngle < 30.0) {
+	          servoAngle = 30.0;
+	      } else if (servoAngle > 55.0) {
+	          servoAngle = 55.0;
 	      }
 
-	  //Servo4_Angle(servoAngle);
-	  Servo4_Angle(45);
+	  Servo3_Angle(servoAngle);
+
 
 	  //Read_ADC();
 
@@ -290,8 +275,8 @@ int main(void)
 //-----------SERVO AYARLARI-------------------------------------------
 	  Servo1_Angle(90);
 	  Servo2_Angle(45);
-	  Servo3_Angle(45);
-	  //Servo4_Angle(45);
+	  //Servo3_Angle(45);
+
 
   }
   /* USER CODE END 3 */
@@ -395,10 +380,6 @@ static void MX_TIM1_Init(void)
     Error_Handler();
   }
   if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
   {
     Error_Handler();
   }
