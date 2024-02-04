@@ -74,48 +74,38 @@ void delay_uS(uint16_t us)
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-//************************PID KONTROL****************************
+//************************PID KONTROL BOLUMU****************************
 
 // PID kontrol değişkenleri
-double Kp = 0.25; // P (Proportional) katsayısı
-double Ki = 0; // I (Integral) katsayısı
-double Kd = 0.0015; // D (Derivative) katsayısı
+float Kp = 0.175; // P (Proportional) katsayısı
+float Ki = 0.0001; // I (Integral) katsayısı
+float Kd = 0.0025; // D (Derivative) katsayısı
+
 
 // Hesaplanan PID kontrol çıkışı
-double pidOutput = 0.0;
+float pidOutput = 0.0;
 
 // PID kontrol değişkenleri
-double error = 0.0; // Hata
-double integral = 0.0; // İntegral
-double derivative = 0.0; // Türev
-double lastError = 0.0; // Son hata
+float error = 0.0; // Hata
+float integral = 0.0; // İntegral
+float derivative = 0.0; // Türev
+float lastError = 0.0; // Son hata
 
 // Hedef uzaklık
-double setpoint = 13.0;
+float setpoint = 10.8999996;
 
 
 // Servo açısı
-double servoAngle = 45.0;
+float servoAngle = 45.0;
+float servoAngle_rev;
 
+/*
 // PID kontrol fonksiyonu
 void calculatePID() {
-    // Hata hesapla
-    error = setpoint - distance;
 
-    // İntegral hesapla
-    integral += error;
-
-    // Türev hesapla
-    derivative = error - lastError;
-
-    // PID çıkışını hesapla
-    pidOutput = Kp * error + Ki * integral + Kd * derivative;
-
-    // Güncel hata değerini sakla
-    lastError = error;
 }
 //**********************************************************************
-
+*/
 
 /*
 void Read_ADC()
@@ -131,7 +121,7 @@ void Read_ADC()
 
 */
 
-uint32_t Read_HCSR04()
+void PID_Control()
 {
 	uint32_t local_time = 0;
 	float distance_temp = 0;
@@ -152,7 +142,38 @@ uint32_t Read_HCSR04()
 	}
 
 	distance_temp = (float)local_time/15.1;
-	return distance_temp;
+	//return distance_temp;
+
+	distance = distance_temp - 3.1; //offset
+
+	if(distance > 26) distance = 26;
+	else if(distance < 0) distance = 0;
+	else distance = distance;
+
+	//------------PID HESAPLAMA------------------------
+
+	// Hata hesapla
+	    error = setpoint - distance;
+
+	    if(error > 6) error = 6;
+	        else if(error < -6) error = -6;
+	        else error = error;
+
+	    // İntegral hesapla
+	    integral -= error;
+
+	    if(integral > 6) integral = 6;
+	    else if(integral < -6) integral = -6;
+	    else integral = integral;
+
+	    // Türev hesapla
+	    derivative = error - lastError;
+
+	    // PID çıkışını hesapla
+	    pidOutput = Kp * error + Ki * integral + Kd * derivative;
+
+	    // Güncel hata değerini sakla
+	    lastError = error;
 }
 
 void Servo1_Angle(int angle1)
@@ -239,23 +260,21 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  //Mesafe hesaplanması*************************
-	  distance = Read_HCSR04(); //cm cinsinden mesafe
-  	  distance -= 3.1; //offset
-
-
-
-      // PID kontrolünü hesapla
-      calculatePID();
+	  PID_Control();
 
 	  // Servo açısını güncelle
 	      servoAngle = servoAngle + pidOutput * (-1);
 
+
 	      // Servo açısını sınırla (0 ile 90 arasında)
-	      if (servoAngle < 30.0) {
-	          servoAngle = 30.0;
-	      } else if (servoAngle > 55.0) {
-	          servoAngle = 55.0;
+	      if (servoAngle < 35.0)
+	      {
+	          servoAngle = 35.0;
+	      }
+
+	      else if (servoAngle > 50.0)
+	      {
+	          servoAngle = 50.0;
 	      }
 
 	  Servo3_Angle(servoAngle);
@@ -274,7 +293,7 @@ int main(void)
 
 //-----------SERVO AYARLARI-------------------------------------------
 	  Servo1_Angle(90);
-	  Servo2_Angle(45);
+	  Servo2_Angle(59);
 	  //Servo3_Angle(45);
 
 
