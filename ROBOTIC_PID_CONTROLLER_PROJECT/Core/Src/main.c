@@ -76,52 +76,43 @@ void delay_uS(uint16_t us)
 
 //************************PID KONTROL****************************
 
-// PID kontrol parametreleri
-float Kp = 5;   // Oransal (P) katsayısı
-float Ki = 1;   // Integral (I) katsayısı
-float Kd =0.01;  // Türev (D) katsayısı
+// PID kontrol değişkenleri
+double Kp = 0.75; // P (Proportional) katsayısı
+double Ki = 0; // I (Integral) katsayısı
+double Kd = 0.05; // D (Derivative) katsayısı
 
-// Servo kontrol parametreleri
-float Servo_Angle = 45.0;  // Başlangıçta servo açısı (derece)
-float Servo_Max_Angle = 90.0;  // Servo maksimum açısı (derece)
-float Servo_Min_Angle = 0.0;   // Servo minimum açısı (derece)
-
-//çıkış
-float control_output = 0.0;
+// Hesaplanan PID kontrol çıkışı
+double pidOutput = 0.0;
 
 // PID kontrol değişkenleri
-float error = 0.0, integral = 0.0, derivative = 0.0;
-float last_error = 0.0;
+double error = 0.0; // Hata
+double integral = 0.0; // İntegral
+double derivative = 0.0; // Türev
+double lastError = 0.0; // Son hata
+
+// Hedef uzaklık
+double setpoint = 13.0;
+
+
+// Servo açısı
+double servoAngle = 45.0;
 
 // PID kontrol fonksiyonu
-float pid_control(float setpoint, float measured_value)
-{
+void calculatePID() {
     // Hata hesapla
-    error = setpoint - measured_value;
+    error = setpoint - distance;
 
     // İntegral hesapla
     integral += error;
 
     // Türev hesapla
-    derivative = error - last_error;
+    derivative = error - lastError;
 
-    // PID kontrol çıkışını hesapla
-    float output = Kp * error + Ki * integral + Kd * derivative;
+    // PID çıkışını hesapla
+    pidOutput = Kp * error + Ki * integral + Kd * derivative;
 
-    // Çıkış sınırlarını kontrol et
-    if (output > Servo_Max_Angle)
-    {
-        output = Servo_Max_Angle;
-    }
-    else if (output < Servo_Min_Angle)
-    {
-        output = Servo_Min_Angle;
-    }
-
-    // Son hata değerini güncelle
-    last_error = error;
-
-    return output;
+    // Güncel hata değerini sakla
+    lastError = error;
 }
 //**********************************************************************
 
@@ -272,23 +263,21 @@ int main(void)
   	  distance -= 3.1; //offset
 
 
-	  // PID kontrol çıkışını al
-	  control_output = pid_control(13.0, distance);
+
+      // PID kontrolünü hesapla
+      calculatePID();
 
 	  // Servo açısını güncelle
-	  Servo_Angle += control_output;
+	      servoAngle += pidOutput;
 
-	  // Servo açısını sınırla
-	  if (Servo_Angle > Servo_Max_Angle)
-	  {
-	      Servo_Angle = Servo_Max_Angle;
-	  }
-	  else if (Servo_Angle < Servo_Min_Angle)
-	  {
-	      Servo_Angle = Servo_Min_Angle;
-	  }
+	      // Servo açısını sınırla (0 ile 90 arasında)
+	      if (servoAngle < 0) {
+	          servoAngle = 0;
+	      } else if (servoAngle > 90) {
+	          servoAngle = 90;
+	      }
 
-	  Servo4_Angle(Servo_Angle);
+	  Servo4_Angle(servoAngle);
 
 	  //Read_ADC();
 
