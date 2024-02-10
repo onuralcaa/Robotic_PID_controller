@@ -43,7 +43,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim1;
-TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
 
@@ -57,7 +56,6 @@ float distance; //0-255 olcum araligi
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM1_Init(void);
-static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /*
@@ -77,9 +75,9 @@ void delay_uS(uint16_t us)
 //************************PID KONTROL BOLUMU****************************
 
 // PID kontrol değişkenleri
-float Kp = 0.175; // P (Proportional) katsayısı
+float Kp = 12; // P (Proportional) katsayısı
 float Ki = 0.0001; // I (Integral) katsayısı
-float Kd = 0.0025; // D (Derivative) katsayısı
+float Kd = 8; // D (Derivative) katsayısı
 
 
 // Hesaplanan PID kontrol çıkışı
@@ -104,7 +102,7 @@ float servoAngle_rev;
 void calculatePID() {
 
 }
-//**********************************************************************
+
 */
 
 /*
@@ -141,30 +139,33 @@ void PID_Control()
 		DWT_Delay_us(1);
 	}
 
-	distance_temp = (float)local_time/15.1;
+	distance_temp = (float)local_time/58;
+	HAL_Delay(10);
 	//return distance_temp;
 
-	distance = distance_temp - 3.1; //offset
+	distance = distance_temp; //offset
 
-	if(distance > 26) distance = 26;
-	else if(distance < 0) distance = 0;
-	else distance = distance;
+
 
 	//------------PID HESAPLAMA------------------------
 
 	// Hata hesapla
 	    error = setpoint - distance;
 
+	    /*
 	    if(error > 6) error = 6;
 	        else if(error < -6) error = -6;
 	        else error = error;
+		*/
 
 	    // İntegral hesapla
 	    integral -= error;
 
+	    /*
 	    if(integral > 6) integral = 6;
 	    else if(integral < -6) integral = -6;
 	    else integral = integral;
+        */
 
 	    // Türev hesapla
 	    derivative = error - lastError;
@@ -186,6 +187,7 @@ void Servo1_Angle(int angle1)
 	angle1 += 45; //offset değeri
 
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, angle1);
+
 }
 
 void Servo2_Angle(int angle2)
@@ -198,7 +200,7 @@ void Servo2_Angle(int angle2)
 	angle2 += 45; //offset değeri
 
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, angle2);
-}
+ }
 
 void Servo3_Angle(int angle3)
 {
@@ -243,11 +245,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM1_Init();
-  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
-
-  HAL_TIM_Base_Start(&htim2);
 
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
@@ -260,21 +259,23 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
 	  PID_Control();
+
 
 	  // Servo açısını güncelle
 	      servoAngle = servoAngle + pidOutput * (-1);
 
 
 	      // Servo açısını sınırla (0 ile 90 arasında)
-	      if (servoAngle < 35.0)
+	      if (servoAngle < 40.0)
 	      {
-	          servoAngle = 35.0;
+	          servoAngle = 40.0;
 	      }
 
-	      else if (servoAngle > 50.0)
+	      else if (servoAngle > 53.0)
 	      {
-	          servoAngle = 50.0;
+	          servoAngle = 53.0;
 	      }
 
 	  Servo3_Angle(servoAngle);
@@ -282,7 +283,7 @@ int main(void)
 
 	  //Read_ADC();
 
-	      //HAL_Delay(1000);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -293,7 +294,7 @@ int main(void)
 
 //-----------SERVO AYARLARI-------------------------------------------
 	  Servo1_Angle(90);
-	  Servo2_Angle(59);
+	  Servo2_Angle(55);
 	  //Servo3_Angle(45);
 
 
@@ -313,7 +314,7 @@ void SystemClock_Config(void)
   /** Configure the main internal regulator output voltage
   */
   __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
@@ -323,11 +324,18 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 64;
+  RCC_OscInitStruct.PLL.PLLN = 180;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 2;
   RCC_OscInitStruct.PLL.PLLR = 2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Activate the Over-Drive mode
+  */
+  if (HAL_PWREx_EnableOverDrive() != HAL_OK)
   {
     Error_Handler();
   }
@@ -337,11 +345,11 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
   {
     Error_Handler();
   }
@@ -367,9 +375,9 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 355;
+  htim1.Init.Prescaler = 2000-1;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 1799;
+  htim1.Init.Period = 1800-1;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -417,52 +425,6 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 2 */
   HAL_TIM_MspPostInit(&htim1);
-
-}
-
-/**
-  * @brief TIM2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM2_Init(void)
-{
-
-  /* USER CODE BEGIN TIM2_Init 0 */
-
-  /* USER CODE END TIM2_Init 0 */
-
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM2_Init 1 */
-
-  /* USER CODE END TIM2_Init 1 */
-  htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 31;
-  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 65536;
-  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM2_Init 2 */
-
-
-  /* USER CODE END TIM2_Init 2 */
 
 }
 
