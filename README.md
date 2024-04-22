@@ -1,8 +1,8 @@
-# PID Kontrolü
+# PID Kontrolcü
 
 Bu proje, Proportional-Integral-Derivative (PID) kontrol algoritmasını uygulayan bir C++ programını içermektedir.
 
-## PID Kontrolü Nedir?
+## PID Kontrol Nedir?
 
 PID kontrolü, geri beslemeli kontrol sistemlerinde yaygın olarak kullanılan bir kontrol algoritmasıdır. PID, sistem çıkışıyla istenilen çıkış arasındaki farkı (hata) kullanarak bir kontrol sinyali üretir. PID kontrolü, üç ana terimden oluşur:
 
