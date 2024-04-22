@@ -26,4 +26,4 @@ Proje dosyalarını derleyin ve çalıştırın. Kontrol edilen sistem ve PID ko
 
 Katkıda bulunmak isterseniz, lütfen bir çekme isteği oluşturun. Her türlü katkıya açığız!
 
-
+İyi çalışmalar...
