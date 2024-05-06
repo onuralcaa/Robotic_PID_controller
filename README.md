@@ -22,8 +22,12 @@ Bu proje, bir PID kontrolörünün C++ dilinde nasıl uygulanacağını gösterm
 
 Proje dosyalarını derleyin ve çalıştırın. Kontrol edilen sistem ve PID kontrolörünün parametrelerini ayarlayarak çeşitli deneyler yapabilirsiniz.
 
+## Şimdiki durum
+
+Tepki süresi yeterince iyi değil ve dengeleme hareketlerinde ani hareketler mevcut.
+
 ## Katkıda Bulunma
 
-Katkıda bulunmak isterseniz, lütfen bir çekme isteği oluşturun. Her türlü katkıya açığız!
+Katkıda bulunmak isterseniz, lütfen bir çekme isteği oluşturun.
 
 İyi çalışmalar...
