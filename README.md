@@ -25,9 +25,3 @@ Proje dosyalarını derleyin ve çalıştırın. Kontrol edilen sistem ve PID ko
 ## Şimdiki durum
 
 Tepki süresi yeterince iyi değil ve dengeleme hareketlerinde ani hareketler mevcut.
-
-## Katkıda Bulunma
-
-Katkıda bulunmak isterseniz, lütfen bir çekme isteği oluşturun.
-
-İyi çalışmalar...
